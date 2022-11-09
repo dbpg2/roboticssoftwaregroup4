@@ -1,6 +1,6 @@
 # roboticssoftwaregroup4
 
-Pin configurations
+Pin configurations(looking from battery side/ opposite of stlink plugin)
 
 Enb - yellow - pin 8 midright
 
@@ -15,6 +15,11 @@ in2 - green - pin1 midleft
 in3 - yellow - pin2 midleft
 
 in4 - orange - pin2 midright
+
+
+vcc - orange - pin10 right
+
+gnd - white - top left vhcl left
 
 
 
