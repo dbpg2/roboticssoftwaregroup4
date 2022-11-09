@@ -24,4 +24,4 @@ gnd - white - top left vhcl left
 
 
 
-stlink - sameside of the previous ones
+stlink should be plugged in on button side
