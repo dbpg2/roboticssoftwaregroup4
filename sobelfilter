@@ -1,8 +1,7 @@
 
+    int g_sum = 0;
 
-int g_sum = 0;
-
-for (uint16_t x = 1; x<width-1; x++) {
+    for (uint16_t x = 1; x<width-1; x++) {
         for (uint16_t y = 1; y<height-1; y++) {
             // Fill the 3x3 window
             int k = 0;
@@ -10,16 +9,13 @@ for (uint16_t x = 1; x<width-1; x++) {
             int g_y = 0;
 
             for (int u=x-1; u<=x+1; u++) {
-                int n = 0;
-                for (int v=y-1; v<=y+1; v++) {
-                    g_x += (inputarr[u][v]*Gx[k][n]);
-                    g_y += (inputarr[u][v]*Gy[k][n]);
-                    n++;
+                for (int v=y-1 ; v<=y+1; v++) {
+                    g_x += (inputarr[u * height + v]*Gx[k]);
+                    g_y += (inputarr[u * height + v]*Gy[k]);
+                    k++;
                 }
-                k++;
             }            
             g_sum = sqrt(pow(g_x,2) + pow(g_y,2));
             BMP_SetPixelGray(imageOut, x, y, g_sum);
         }
     }
-
