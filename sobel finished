@@ -1,0 +1,30 @@
+void sobel(uint16_t *cameraDataPtr, uint16_t width, uint16_t height){
+	const uint16_t vmatrix[9] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};
+	const uint16_t hmatrix[9] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
+	// int vmatrix[9] = {-10, 15, -10, 0, 0, 0, 10, 15, 10};
+	// int hmatrix[9] = {-10, 0, 10, -15, 0, 20, -15, 0, 10};
+	uint16_t window[9];
+	for (int y=1; y<height-1; y++) {
+		for (int x=1; x<width-1; x++) {
+
+			//fill the matrix
+			int k = 0;
+			for (int v=y-1; v<=y+1; v++) {
+				for (int u=x-1; u<=x+1; u++) {
+					window[k++] = *(cameraDataPtr + width * v + u) >> 11;
+				}
+			}
+
+			//change inside this
+			uint16_t horizontal_kernel = 0;
+			uint16_t vertical_kernel = 0;
+			for (int i = 0; i < 9; i++){
+				horizontal_kernel += vmatrix[i] * window[i];
+				vertical_kernel += hmatrix[i] * window[i];
+			}
+
+			uint16_t temp = (uint16_t)sqrt(horizontal_kernel * horizontal_kernel + vertical_kernel * vertical_kernel);
+			*(cameraDataPtr + width * (y-1) + (x-1)) = ((temp) << 11) + ((temp) << 6) + temp;
+		}
+	}
+}
