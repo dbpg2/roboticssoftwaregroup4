@@ -1,0 +1,47 @@
+void arcStop(){
+	gpio_set(In1);
+	gpio_set(In2);
+	gpio_set(In3);
+	gpio_set(In4);
+
+}
+
+void arcForward(){
+	gpio_reset(In1);
+	gpio_set(In2);
+	gpio_reset(In3);
+	gpio_set(In4);
+	TIM4->CCR3=1600;
+	TIM4->CCR4=1600;
+}
+
+void arcReverse(){
+	gpio_set(In1);
+	gpio_reset(In2);
+	gpio_set(In3);
+	gpio_reset(In4);
+	TIM4->CCR3=1600;
+	TIM4->CCR4=1600;
+}
+
+void arcLeft(angle){
+	TIM5->CCR1=99-4*angle
+
+	gpio_reset(In1);
+	gpio_set(In2);
+	gpio_set(In3);
+	gpio_reset(In4);
+	TIM4->CCR3=1600;
+	TIM4->CCR4=1600;
+}
+
+void arcRight(angle){
+	TIM5->CCR1=99+4*angle; // I guess, need more adjustment later on
+
+	gpio_set(In1);
+	gpio_reset(In2);
+	gpio_reset(In3);
+	gpio_set(In4);
+	TIM4->CCR3=1600;
+	TIM4->CCR4=1600;
+}
