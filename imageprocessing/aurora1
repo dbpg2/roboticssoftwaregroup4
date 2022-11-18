@@ -1,4 +1,4 @@
-
+[VScode]
     int g_sum = 0;
 
     for (uint16_t x = 1; x<width-1; x++) {
@@ -22,15 +22,7 @@
 
 
 
-
-
-
-
-
-
-
-
-
+[V1]
 
 void sobelFilter( uint16_t * const cameraDataPtr, uint16_t *processedDataPtr, uint16_t width, uint16_t height){
 	const int Gx[9] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
@@ -57,3 +49,49 @@ void sobelFilter( uint16_t * const cameraDataPtr, uint16_t *processedDataPtr, ui
         }
     }
 }
+
+[V2]
+
+void sobel(uint16_t *cameraDataPtr, uint16_t width, uint16_t height){
+	const uint16_t vmatrix[9] = {3, 10, 3, 0, 0, 0, -1, -10, -3};
+	const uint16_t hmatrix[9] = {3, 0, -3, 10, 0, -10, 3, 0, -3};
+	uint16_t window[9];
+
+	for (int y=1; y<height-1; y++) {
+		for (int x=1; x<width-1; x++) {
+
+			//fill the matrix
+			int k = 0;
+			for (int v=y-1; v<=y+1; v++) {
+				for (int u=x-1; u<=x+1; u++) {
+					window[k++] = *(cameraDataPtr + width * v + u)>> 11;
+				}
+			}
+
+			//change inside this
+			uint16_t horizontal_kernel = 0;
+			uint16_t vertical_kernel = 0;
+			for (int i = 0; i < 9; i++){
+				horizontal_kernel += vmatrix[i] * window[i];
+				vertical_kernel += hmatrix[i] * window[i];
+			}
+
+			uint16_t temp = (uint16_t)sqrt(pow(horizontal_kernel,2) + pow(vertical_kernel,2));
+//			temp = (uint8_t)temp;
+
+//			*(cameraDataPtr + width * (y-1) + (x-1)) =((temp & 0xF8) << 11) + ((temp & 0xFC) << 4) + ((temp & 0xF8) >> 3);
+//			*(cameraDataPtr + width * (y-1) + (x-1)) = ((temp) << 11) + ((temp) << 6) + temp;
+			if(temp > 255){
+				*(cameraDataPtr + width * (y-1) + (x-1)) = WHITE;
+			}
+			else{
+				*(cameraDataPtr + width * (y-1) + (x-1)) = BLACK;
+			}
+		}
+	}
+}
+
+[v3]
+
+gray = (R*19595 + B*38469 + G*7472) >> 16
+
