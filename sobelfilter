@@ -1,0 +1,24 @@
+void sobelFilter(const uint16_t* cameraDataPtr, uint16_t *processedDataPtr, uint16_t width, uint16_t height){
+	const int Gx[9] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
+	const int Gy[9] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};
+	int g_sum = 0;
+
+	for (uint16_t x = 0; x< width-1; x++) {
+	        for (uint16_t y = 1; y<height-1; y++) {
+	            // Fill the 3x3 window
+	            int k = 0;
+	            int g_x = 0;
+	            int g_y = 0;
+
+	            for (int u=x-1; u<=x+1; u++) {
+	                for (int v=y-1; v<=y+1; v++) {
+	                    g_x += (*(cameraDataPtr + width * v + u) * Gx[k]);
+	                    g_y += (*(cameraDataPtr + width * v + u) * Gy[k]);
+	                    k++;
+	                }
+	            }
+	            g_sum = sqrt(pow(g_x,2) + pow(g_y,2));
+	            *(processedDataPtr + width * y + x) = g_sum;
+	        }
+	    }
+}
