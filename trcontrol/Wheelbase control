@@ -43,7 +43,6 @@ extern motor_status motor1_stat;
 extern motor_status motor2_stat;
 extern motor_status motor3_stat;
 extern motor_status motor4_stat;
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -63,14 +62,14 @@ extern motor_status motor4_stat;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
-void PID(uint32_t* targetRpm, uint32_t* inputRpm , uint32_t* outputRpm){
+void PID(int16_t targetRpm, int16_t inputRpm , int16_t* outputRpm){
 
 	uint32_t current_error = 0;
 	uint32_t current_time = HAL_GetTick();
-	uint32_t static kp = 0, ki = 0, kd = 0;
+	uint32_t static kp = 5, ki = 0, kd = 3;
 	uint32_t diff = 0;
 	uint32_t prop = 0;
-	uint32_t integral = 0;
+//	uint32_t integral = 0;
 	uint32_t static prev_time = 0;
 	uint32_t static prev_error = 0;
 
@@ -79,39 +78,32 @@ void PID(uint32_t* targetRpm, uint32_t* inputRpm , uint32_t* outputRpm){
 	prop = kp * current_error;
 	diff = kd * (current_error - prev_error)/(current_time - prev_time);
 
-	outputRpm = prop + diff;
+	*outputRpm = prop + diff;
 
 	prev_time = current_time;
 	prev_error = current_error;
 
 }
 
-void speedcal(uint32_t Vx, uint32_t Vy, uint32_t Vw){
 
-	uint32_t motor1_tar = 0, motor2_tar = 0, motor3_tar = 0;
-	uint32_t* motor1_out = 0, motor2_out = 0, motor3_out = 0;
-
-	motor1_tar = Vy + Vw;
-	motor2_tar = -(sqrt(3)/2)*Vx - (1/2)*Vy + Vw;
-	motor3_tar = (sqrt(3)/2)*Vx - (1/2)*Vy + Vw;
-
-	PID(motor1_tar, motor1_stat.speed_rpm , motor1_out);
-	PID(motor2_tar, motor2_stat.speed_rpm , motor2_out);
-	PID(motor3_tar, motor3_stat.speed_rpm , motor3_out);
-
-	CAN_cmd_motor(motor1_out, motor2_out, motor3_out, 0,&hcan1);
-
-}
-//
-//
-//}
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/*
+int* getPixel(uint16_t img[120*160],uint16_t x, uint16_t y) {
+	int InputArray[120][160];
 
 
+    for (int x=0; x<120; x++) {
+        for(int y=0; y<160; y++) {
+            BMP_GetPixelIndex(img[120*160],x,y,&InputArray[x][y]);
+        }
+    }
+	return InputArray;
+}
+*/
 /* USER CODE END 0 */
 
 /**
@@ -163,59 +155,78 @@ int main(void) {
 
 	/* USER CODE END 2 */
 
+	int16_t motor2_out = 0;
+	int16_t motor3_out = 0;
+	int16_t motor4_out = 0;
+	int16_t* motor2 = &motor2_out;
+	int16_t* motor3 = &motor3_out;
+	int16_t* motor4 = &motor4_out;
+
+//	int16_t motor[3] = {0};
+
+
 	can_init();
+
 
 	while (1) {
 
+
+//			tft_prints(0,0,"m1_spd: %d", motor1_stat.speed_rpm); //
 	    	if (tft_update(10) == 0) {
-				tft_prints(0,0,"m1_spd: %d", motor1_stat.speed_rpm);
-				tft_prints(0,1,"m1_temp: %d", motor1_stat.temperature);
-				tft_prints(0,2,"m1_cur: %d", motor1_stat.given_current);
+				tft_prints(0,0,"m2_spd: %d", motor2_stat.speed_rpm);
+				tft_prints(0,1,"m2_temp: %d", motor2_stat.temperature);
+				tft_prints(0,2,"m2_cur: %d", motor2_stat.given_current);
 
-				tft_prints(0,0,"m2_spd: %d", motor1_stat.speed_rpm);
-				tft_prints(0,1,"m2_temp: %d", motor1_stat.temperature);
-				tft_prints(0,2,"m2_cur: %d", motor1_stat.given_current);
+				tft_prints(0,3,"m3_spd: %d", motor3_stat.speed_rpm);
+				tft_prints(0,4,"m3_temp: %d", motor3_stat.temperature);
+				tft_prints(0,5,"m3_cur: %d", motor3_stat.given_current);
 
-				tft_prints(0,0,"m3_spd: %d", motor1_stat.speed_rpm);
-				tft_prints(0,1,"m3_temp: %d", motor1_stat.temperature);
-				tft_prints(0,2,"m3_cur: %d", motor1_stat.given_current);
+				tft_prints(0,6,"m4_spd: %d", motor4_stat.speed_rpm);
+				tft_prints(0,7,"m4_temp: %d", motor4_stat.temperature);
+				tft_prints(0,8,"m4_cur: %d", motor4_stat.given_current);
 
 			}
-
-
-	    	HAL_CAN_RxFifo0MsgPendingCallback(&hcan1);
+	        /* USER CODE END WHILE */
+	    	HAL_CAN_RxFifo0MsgPendingCallback(&hcan1); //motor 2,3,4 can work
 	    	HAL_CAN_RxFifo0MsgPendingCallback(&hcan2);
 	    	UpdateMotorStatus();
-
-//BTN1：forward, BTN2: backward, Right: A:2/3*speed B: -1/3*speed, C: -1/3*speed, Left: A: -2/3*speed B: 1/3*speed C: 1/3*speed
-
+	        /* USER CODE BEGIN 3 */
+	        // goto tutorial2_hw.c to do your classwork and homework
 			if(!btn_read(BTN1)){
-//				speedcal(0, 1000, -1000); //forward
-				CAN_cmd_motor(0, 500*0.577, 500*(-0.577), 0,&hcan1);
-		        if (HAL_GetTick() - last_ticks >= 1000) {
-		            led_toggle(LED4);
-		            last_ticks = HAL_GetTick();
-		            CAN_cmd_motor(0, 0, 0, 0,&hcan1);
-		        }
-		        //change to speed(var) calculated by PID
-//				CAN_cmd_motor(1000, 1000, 1000, 1000,&hcan2); //rotate clockwise, parameter list(motor1,motor2,motor3,motor4)
+				PID(3000, motor2_stat.speed_rpm , motor2);
+				PID(3000, motor3_stat.speed_rpm , motor3);
+				PID(3000, motor4_stat.speed_rpm , motor4);
+				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+//				CAN_cmd_motor(0, 3500, 0, -2500,&hcan1);
+//				if(HAL_GetTick() - last_ticks >= 500) {
+//		            led_toggle(LED4);
+//		            last_ticks = HAL_GetTick();
+//		            CAN_cmd_motor(0, 0, 0, 0,&hcan1);
+//		        }
+//				CAN_cmd_motor(1000, 1000, 1000, 1000,&hcan2);//rotate clockwise, parameter list(motor1,motor2,motor3,motor4)
 			}
 //			if(btn_read(BTN1)){
-//				CAN_cmd_motor(0, 0, 0, 0,&hcan1);
+//				PID(0, motor2_stat.speed_rpm , motor2);
+//				PID(0, motor3_stat.speed_rpm , motor3);
+//				PID(0, motor4_stat.speed_rpm , motor4);
+//				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
 ////				CAN_cmd_motor(0, 0, 0, 0,&hcan2);//remember to set it back to 0 once you don't want to run the motor.
 //			}
 			if(!btn_read(BTN2)){
-//				speedcal(0, -1000, 1000); //backward
-				CAN_cmd_motor(-1000, -1000, -1000, -1000,&hcan1); //rotate in anti clockwise.
+				PID(-3000, motor2_stat.speed_rpm , motor2);
+				PID(-3000, motor3_stat.speed_rpm , motor3);
+				PID(-3000, motor4_stat.speed_rpm , motor4);
+				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+//				CAN_cmd_motor(-1000, -1000, -1000, -1000,&hcan2);//rotate in anti clockwise.
 			}
-			if(btn_read(BTN2)){
-				CAN_cmd_motor(0, 0, 0, 0,&hcan1);
+			if(btn_read(BTN2)&&btn_read(BTN1)){
+				PID(0, motor2_stat.speed_rpm , motor2);
+				PID(0, motor3_stat.speed_rpm , motor3);
+				PID(0, motor4_stat.speed_rpm , motor4);
+				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
 //				CAN_cmd_motor(0, 0, 0, 0,&hcan2);
 			}
-
-
-
-			// led blinky - useful for indicating the condition of the board
+	        // led blinky - useful for indicating the condition of the board
 	        if (HAL_GetTick() - last_ticks >= 100) {
 	            led_toggle(LED4);
 	            last_ticks = HAL_GetTick();
