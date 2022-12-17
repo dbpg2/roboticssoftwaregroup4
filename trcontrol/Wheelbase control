@@ -31,7 +31,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "camera/camera.h"
+//#include "camera/camera.h"
 #include "lcd/lcd.h"
 #include "lcd/lcd_graphics.h"
 // #include "legacy/camera.h"
@@ -129,7 +129,7 @@ int main(void) {
 	MX_DMA_Init();
 	MX_USART2_UART_Init();
 
-	MX_TIM6_Init();
+	//MX_TIM6_Init();
 	/* USER CODE BEGIN 2 */
 	volatile uint32_t last_ticks = 0;
 	// we turn off all the led first
@@ -139,20 +139,6 @@ int main(void) {
 	led_off(LED4);
 	tft_init(PIN_ON_TOP, BLACK, WHITE, YELLOW, DARK_GREEN);
 
-	// Init camera
-	camera_GPIO_init();
-	tft_prints(0, 0, "Initing camera");
-	tft_update(0);
-	if (camera_init() == CAM_NOT_INITED || camera_init() == CAM_INIT_ERROR) {
-		tft_prints(0, 0, "No OV7725 module");
-	} else {
-		tft_prints(0, 0, "Inited");
-		cam_set_state(CAM_CAPTURING);
-	}
-	tft_update(0);
-	cam_set_window(0, 0, QQVGA_120x160);
-	cam_set_colormode(CAM_RGB565);//turn into rgb camera
-
 	/* USER CODE END 2 */
 
 	int16_t motor2_out = 0;
@@ -161,12 +147,10 @@ int main(void) {
 	int16_t* motor2 = &motor2_out;
 	int16_t* motor3 = &motor3_out;
 	int16_t* motor4 = &motor4_out;
-
-//	int16_t motor[3] = {0};
-
+	int16_t rx_buff[3];
+	uint16_t timeout = 0xFFFF;
 
 	can_init();
-
 
 	while (1) {
 
@@ -186,32 +170,27 @@ int main(void) {
 				tft_prints(0,8,"m4_cur: %d", motor4_stat.given_current);
 
 			}
-	        /* USER CODE END WHILE */
+
+	    	/* USER CODE END WHILE */
 	    	HAL_CAN_RxFifo0MsgPendingCallback(&hcan1); //motor 2,3,4 can work
 	    	HAL_CAN_RxFifo0MsgPendingCallback(&hcan2);
 	    	UpdateMotorStatus();
 	        /* USER CODE BEGIN 3 */
 	        // goto tutorial2_hw.c to do your classwork and homework
+
+//	    	HAL_UART_Receive(&huart1, (int16_t*)&rx_buff, sizeof(rx_buff), timeout);
+//
+//			PID(rx_buff[0], motor2_stat.speed_rpm , motor2);
+//			PID(rx_buff[1], motor3_stat.speed_rpm , motor3);
+//			PID(rx_buff[2], motor4_stat.speed_rpm , motor4);
+
+
 			if(!btn_read(BTN1)){
 				PID(3000, motor2_stat.speed_rpm , motor2);
 				PID(3000, motor3_stat.speed_rpm , motor3);
 				PID(3000, motor4_stat.speed_rpm , motor4);
 				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
-//				CAN_cmd_motor(0, 3500, 0, -2500,&hcan1);
-//				if(HAL_GetTick() - last_ticks >= 500) {
-//		            led_toggle(LED4);
-//		            last_ticks = HAL_GetTick();
-//		            CAN_cmd_motor(0, 0, 0, 0,&hcan1);
-//		        }
-//				CAN_cmd_motor(1000, 1000, 1000, 1000,&hcan2);//rotate clockwise, parameter list(motor1,motor2,motor3,motor4)
 			}
-//			if(btn_read(BTN1)){
-//				PID(0, motor2_stat.speed_rpm , motor2);
-//				PID(0, motor3_stat.speed_rpm , motor3);
-//				PID(0, motor4_stat.speed_rpm , motor4);
-//				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
-////				CAN_cmd_motor(0, 0, 0, 0,&hcan2);//remember to set it back to 0 once you don't want to run the motor.
-//			}
 			if(!btn_read(BTN2)){
 				PID(-3000, motor2_stat.speed_rpm , motor2);
 				PID(-3000, motor3_stat.speed_rpm , motor3);
@@ -224,8 +203,12 @@ int main(void) {
 				PID(0, motor3_stat.speed_rpm , motor3);
 				PID(0, motor4_stat.speed_rpm , motor4);
 				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
-//				CAN_cmd_motor(0, 0, 0, 0,&hcan2);
 			}
+
+//			if(recieve){
+//				gpio_set(lagori);
+//			}
+
 	        // led blinky - useful for indicating the condition of the board
 	        if (HAL_GetTick() - last_ticks >= 100) {
 	            led_toggle(LED4);
