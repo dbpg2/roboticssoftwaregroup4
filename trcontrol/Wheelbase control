@@ -147,27 +147,35 @@ int main(void) {
 	int16_t* motor2 = &motor2_out;
 	int16_t* motor3 = &motor3_out;
 	int16_t* motor4 = &motor4_out;
-	int16_t rx_buff[3];
-	uint16_t timeout = 0xFFFF;
+	uint8_t rx_buff[99];
+	uint16_t timeout = 4;
 
 	can_init();
 
 	while (1) {
 
+//			while(rx_buff[0] != 'A' || rx_buff[0] != 'B'){
+//				HAL_UART_Receive(&huart1, rx_buff, sizeof(rx_buff), timeout);
+//			}
+//
+//			if(rx_buff[0] == 'A'){
+//
+//			}
+//			elseif(rx_buff[1] == 'B'){
+//
+//			}
 
-//			tft_prints(0,0,"m1_spd: %d", motor1_stat.speed_rpm); //
+			HAL_UART_Receive(&huart1, rx_buff, sizeof(rx_buff), timeout);
+
 	    	if (tft_update(10) == 0) {
 				tft_prints(0,0,"m2_spd: %d", motor2_stat.speed_rpm);
-				tft_prints(0,1,"m2_temp: %d", motor2_stat.temperature);
-				tft_prints(0,2,"m2_cur: %d", motor2_stat.given_current);
 
-				tft_prints(0,3,"m3_spd: %d", motor3_stat.speed_rpm);
-				tft_prints(0,4,"m3_temp: %d", motor3_stat.temperature);
-				tft_prints(0,5,"m3_cur: %d", motor3_stat.given_current);
+				tft_prints(0,1,"m3_spd: %d", motor3_stat.speed_rpm);
 
-				tft_prints(0,6,"m4_spd: %d", motor4_stat.speed_rpm);
-				tft_prints(0,7,"m4_temp: %d", motor4_stat.temperature);
-				tft_prints(0,8,"m4_cur: %d", motor4_stat.given_current);
+				tft_prints(0,2,"m4_spd: %d", motor4_stat.speed_rpm);
+
+				tft_prints(0,4,"x: %d", rx_buff[1]);
+				tft_prints(0,5,"y: %d", rx_buff[2]);
 
 			}
 
@@ -176,13 +184,14 @@ int main(void) {
 	    	HAL_CAN_RxFifo0MsgPendingCallback(&hcan2);
 	    	UpdateMotorStatus();
 	        /* USER CODE BEGIN 3 */
-	        // goto tutorial2_hw.c to do your classwork and homework
 
-//	    	HAL_UART_Receive(&huart1, (int16_t*)&rx_buff, sizeof(rx_buff), timeout);
-//
-//			PID(rx_buff[0], motor2_stat.speed_rpm , motor2);
-//			PID(rx_buff[1], motor3_stat.speed_rpm , motor3);
-//			PID(rx_buff[2], motor4_stat.speed_rpm , motor4);
+
+	    	if(*rx_buff == 255){
+				PID(0, motor2_stat.speed_rpm , motor2);
+				PID(2000, motor3_stat.speed_rpm , motor3);
+				PID(-2000, motor4_stat.speed_rpm , motor4);
+				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+	    	}
 
 
 			if(!btn_read(BTN1)){
@@ -196,7 +205,7 @@ int main(void) {
 				PID(-3000, motor3_stat.speed_rpm , motor3);
 				PID(-3000, motor4_stat.speed_rpm , motor4);
 				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
-//				CAN_cmd_motor(-1000, -1000, -1000, -1000,&hcan2);//rotate in anti clockwise.
+
 			}
 			if(btn_read(BTN2)&&btn_read(BTN1)){
 				PID(0, motor2_stat.speed_rpm , motor2);
@@ -205,9 +214,6 @@ int main(void) {
 				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
 			}
 
-//			if(recieve){
-//				gpio_set(lagori);
-//			}
 
 	        // led blinky - useful for indicating the condition of the board
 	        if (HAL_GetTick() - last_ticks >= 100) {
