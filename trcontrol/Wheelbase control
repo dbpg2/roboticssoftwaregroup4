@@ -147,6 +147,7 @@ int main(void) {
 	int16_t* motor2 = &motor2_out;
 	int16_t* motor3 = &motor3_out;
 	int16_t* motor4 = &motor4_out;
+//	char rx_buff[99];
 	uint8_t rx_buff[99];
 	uint16_t timeout = 4;
 
@@ -161,7 +162,7 @@ int main(void) {
 //			if(rx_buff[0] == 'A'){
 //
 //			}
-//			elseif(rx_buff[1] == 'B'){
+//			elseif(rx_buff[1] == 'B'){(uint8_t*)&
 //
 //			}
 
@@ -174,8 +175,10 @@ int main(void) {
 
 				tft_prints(0,2,"m4_spd: %d", motor4_stat.speed_rpm);
 
-				tft_prints(0,4,"x: %d", rx_buff[1]);
-				tft_prints(0,5,"y: %d", rx_buff[2]);
+				tft_prints(0,4,"A: %d", rx_buff[0]);
+				tft_prints(0,5,"B: -%d", rx_buff[1]);
+				tft_prints(0,6,"c: %d", rx_buff[2]);
+
 
 			}
 
@@ -186,12 +189,12 @@ int main(void) {
 	        /* USER CODE BEGIN 3 */
 
 
-	    	if(*rx_buff == 255){
-				PID(0, motor2_stat.speed_rpm , motor2);
-				PID(2000, motor3_stat.speed_rpm , motor3);
-				PID(-2000, motor4_stat.speed_rpm , motor4);
-				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
-	    	}
+//	    	if(rx_buff[1] == 255){
+//				PID(0, motor2_stat.speed_rpm , motor2);
+//				PID(2000, motor3_stat.speed_rpm , motor3);
+//				PID(-2000, motor4_stat.speed_rpm , motor4);
+//				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+//	    	}
 
 
 			if(!btn_read(BTN1)){
@@ -199,6 +202,7 @@ int main(void) {
 				PID(3000, motor3_stat.speed_rpm , motor3);
 				PID(3000, motor4_stat.speed_rpm , motor4);
 				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+//				gpio_set(loading);
 			}
 			if(!btn_read(BTN2)){
 				PID(-3000, motor2_stat.speed_rpm , motor2);
