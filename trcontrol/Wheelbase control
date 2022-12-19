@@ -147,26 +147,28 @@ int main(void) {
 	int16_t* motor2 = &motor2_out;
 	int16_t* motor3 = &motor3_out;
 	int16_t* motor4 = &motor4_out;
-//	char rx_buff[99];
-	uint8_t rx_buff[99];
+	char rx_buff[4]={0};
+	uint8_t start = 0;
 	uint16_t timeout = 4;
+//	uint8_t ok =
+
 
 	can_init();
 
 	while (1) {
 
-//			while(rx_buff[0] != 'A' || rx_buff[0] != 'B'){
-//				HAL_UART_Receive(&huart1, rx_buff, sizeof(rx_buff), timeout);
-//			}
-//
+//			uint8_t rx_buff[3]={0};
+//			uint8_t start = 0;
+
+			uint8_t ok = HAL_UART_Receive(&huart1, rx_buff, 4, timeout);
+
 //			if(rx_buff[0] == 'A'){
-//
-//			}
-//			elseif(rx_buff[1] == 'B'){(uint8_t*)&
-//
+//				PID(0, motor2_stat.speed_rpm , motor2);
+//				PID(2000, motor3_stat.speed_rpm , motor3);
+//				PID(-2000, motor4_stat.speed_rpm , motor4);
+//				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
 //			}
 
-			HAL_UART_Receive(&huart1, rx_buff, sizeof(rx_buff), timeout);
 
 	    	if (tft_update(10) == 0) {
 				tft_prints(0,0,"m2_spd: %d", motor2_stat.speed_rpm);
@@ -175,12 +177,35 @@ int main(void) {
 
 				tft_prints(0,2,"m4_spd: %d", motor4_stat.speed_rpm);
 
-				tft_prints(0,4,"A: %d", rx_buff[0]);
-				tft_prints(0,5,"B: -%d", rx_buff[1]);
-				tft_prints(0,6,"c: %d", rx_buff[2]);
-
+				tft_prints(0,4,"A: %c", rx_buff[0]);
+				tft_prints(0,5,"B: %d", rx_buff[0]);
+				tft_prints(0,6,"A: %d", rx_buff[2]);
+				tft_prints(0,8,"time: %d",HAL_GetTick());
 
 			}
+
+			if(rx_buff[0] == 'A'){
+				PID(rx_buff[1]*1000, motor2_stat.speed_rpm , motor2);
+				PID(rx_buff[2]*1000, motor3_stat.speed_rpm , motor3);
+				PID(rx_buff[3], motor4_stat.speed_rpm , motor4);
+				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+			}
+			else if(rx_buff[0] == 'B'){
+				PID(0, motor2_stat.speed_rpm , motor2);
+				PID(0, motor3_stat.speed_rpm , motor3);
+				PID(0, motor4_stat.speed_rpm , motor4);
+				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);s
+			}
+
+
+//			if (ok == HAL_OK && start == 'A'){
+//				HAL_UART_Receive(&huart1, rx_buff, 2, timeout);
+//				tft_prints(0,8,"A");
+//	}
+//			else{
+//				tft_prints(0,6,"not ok");
+//				continue;
+//			}
 
 	    	/* USER CODE END WHILE */
 	    	HAL_CAN_RxFifo0MsgPendingCallback(&hcan1); //motor 2,3,4 can work
@@ -211,12 +236,12 @@ int main(void) {
 				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
 
 			}
-			if(btn_read(BTN2)&&btn_read(BTN1)){
-				PID(0, motor2_stat.speed_rpm , motor2);
-				PID(0, motor3_stat.speed_rpm , motor3);
-				PID(0, motor4_stat.speed_rpm , motor4);
-				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
-			}
+//			if(btn_read(BTN2)&&btn_read(BTN1)){
+//				PID(0, motor2_stat.speed_rpm , motor2);
+//				PID(0, motor3_stat.speed_rpm , motor3);
+//				PID(0, motor4_stat.speed_rpm , motor4);
+//				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+//			}
 
 
 	        // led blinky - useful for indicating the condition of the board
