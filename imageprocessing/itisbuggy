@@ -278,6 +278,17 @@ int main(void)
 		cam_set_state(CAM_CAPTURING);
 
 	}
+
+	int countRight=0;
+	int countLeft=0;
+	int Left[5];
+	int Right[5];
+	int timerRight=0;
+	int maxRight=0;
+	int maxLeft=0;
+	int timerRight2=0;
+	int timerLeft2=0;
+	int timerLeft=0;
 	tft_update(800);
 	cam_set_window(10, 30, QQVGA_120x160);
 	cam_set_colormode(CAM_GRAYSCALE);
@@ -304,16 +315,7 @@ int main(void)
 		sobel12(img, 120, 80);
 		bNwFilter(img);
 
-		int countRight=0;
-		int countLeft=0;
-		int Left[5];
-		int Right[5];
-		int timerRight=0;
-		int maxRight=0;
-		int maxLeft=0;
-		int timerRight2=0;
-		int timerLeft2=0;
-		int timerLeft=0;
+
 
 
 			for (int i =13;i<26;i++) {
@@ -351,17 +353,15 @@ int main(void)
 			tft_prints(0,7,"Forward");
 		}
 		else if ((countLeft - countRight)>0){
-			int e = 0;
 						if ((HAL_GetTick()-timerLeft2 )==5) {
-							e = largest(Left,5);
+							maxLeft = largest(Left,5);
 							timerLeft2=HAL_GetTick();
 						}
 					arcLeft(countLeft);
 				}
 		else if ((countRight- countLeft)>0 ) {
-			int d = 0;
 			if ((HAL_GetTick()-timerRight2 )==5) {
-				d = largest(Right,5);
+				maxRight = largest(Right,5);
 				timerRight2=HAL_GetTick();
 			}
 			arcRight(d);
