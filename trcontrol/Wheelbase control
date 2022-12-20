@@ -66,7 +66,7 @@ void PID(int16_t targetRpm, int16_t inputRpm , int16_t* outputRpm){
 
 	uint32_t current_error = 0;
 	uint32_t current_time = HAL_GetTick();
-	uint32_t static kp = 5, ki = 0, kd = 3;
+	uint32_t static kp = 5, kd = 3;
 	uint32_t diff = 0;
 	uint32_t prop = 0;
 //	uint32_t integral = 0;
@@ -92,18 +92,6 @@ void PID(int16_t targetRpm, int16_t inputRpm , int16_t* outputRpm){
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 /*
-int* getPixel(uint16_t img[120*160],uint16_t x, uint16_t y) {
-	int InputArray[120][160];
-
-
-    for (int x=0; x<120; x++) {
-        for(int y=0; y<160; y++) {
-            BMP_GetPixelIndex(img[120*160],x,y,&InputArray[x][y]);
-        }
-    }
-	return InputArray;
-}
-*/
 /* USER CODE END 0 */
 
 /**
@@ -152,16 +140,18 @@ int main(void) {
 	uint16_t timeout = 4;
 //	uint8_t ok =
 
-
 	can_init();
 
 	while (1) {
 
 //			uint8_t rx_buff[3]={0};
 //			uint8_t start = 0;
+//			gpio_set(loading);
+//			gpio_set(shoot);
+//			gpio_set(preshoot);
+//			gpio_set(lagori);
 
 			uint8_t ok = HAL_UART_Receive(&huart1, &start, 1, timeout);
-//			HAL_UART_Receive(&huart1, rx_buff, 1, timeout);
 
 			if(ok == HAL_OK && start == 'O'){
 				HAL_UART_Receive(&huart1, &rx_buff[0], 1, timeout);
@@ -189,59 +179,59 @@ int main(void) {
 
 				case 'W':
 					PID(0, motor2_stat.speed_rpm , motor2);
-					PID(2000, motor3_stat.speed_rpm , motor3);
-					PID(-2000, motor4_stat.speed_rpm , motor4);
+					PID(1000, motor3_stat.speed_rpm , motor3);
+					PID(-1000, motor4_stat.speed_rpm , motor4);
 					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
 					break;
 
 				case 'S':
 					PID(0, motor2_stat.speed_rpm , motor2); //head
-					PID(-2000, motor3_stat.speed_rpm , motor3);
-					PID(2000, motor4_stat.speed_rpm , motor4);
+					PID(-1000, motor3_stat.speed_rpm , motor3);
+					PID(1000, motor4_stat.speed_rpm , motor4);
 					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
 					break;
 
 				case 'D':
-					PID(2000, motor2_stat.speed_rpm , motor2);
-					PID(0, motor3_stat.speed_rpm , motor3);
-					PID(0, motor4_stat.speed_rpm , motor4);
+					PID(-1000, motor2_stat.speed_rpm , motor2);
+					PID(-500, motor3_stat.speed_rpm , motor3);
+					PID(-500, motor4_stat.speed_rpm , motor4);
 					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
 					break;
-	//
-	//	    	case 'A':
-	//	    		PID(3000, motor2_stat.speed_rpm , motor2);
-	//				PID(3000, motor3_stat.speed_rpm , motor3);
-	//				PID(3000, motor4_stat.speed_rpm , motor4);
-	//				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+
+		    	case 'A':
+		    		PID(1000, motor2_stat.speed_rpm , motor2);
+					PID(500, motor3_stat.speed_rpm , motor3);
+					PID(500, motor4_stat.speed_rpm , motor4);
+					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
 
 				case 'R':
-					PID(2000, motor2_stat.speed_rpm , motor2);
-					PID(2000, motor3_stat.speed_rpm , motor3);
-					PID(2000, motor4_stat.speed_rpm , motor4);
+					PID(1000, motor2_stat.speed_rpm , motor2);
+					PID(1000, motor3_stat.speed_rpm , motor3);
+					PID(1000, motor4_stat.speed_rpm , motor4);
 					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
 					break;
 
 				case 'P': //shoot
 					gpio_toggle(shoot); //原loading
+					HAL_Delay(2);
 					tft_prints(0,8,"shoot");
 					break;
 
 				case 'L': //preshoot
 					gpio_toggle(preshoot); //原lagori
-					gpio_set(preshoot);
-					gpio_reset(preshoot);
+					HAL_Delay(2);
 					tft_prints(0,9,"preshoot");
 					break;
 
 				case 'E': //lagori
 					gpio_toggle(lagori); //原shoot
-					gpio_set(lagori);
-					gpio_reset(lagori);
+					HAL_Delay(2);
 					tft_prints(1,8,"lagori");
 					break;
 
 				case 'X':  //loading
 					gpio_toggle(loading);
+					HAL_Delay(2);
 					tft_prints(1,9,"loading");
 					break;
 
@@ -268,36 +258,10 @@ int main(void) {
 	    	UpdateMotorStatus();
 	        /* USER CODE BEGIN 3 */
 
-
-//	    	if(rx_buff[1] == 255){
-//				PID(0, motor2_stat.speed_rpm , motor2);
-//				PID(2000, motor3_stat.speed_rpm , motor3);
-//				PID(-2000, motor4_stat.speed_rpm , motor4);
-//				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
-//	    	}
-
-
-			if(!btn_read(BTN1)){
-				PID(3000, motor2_stat.speed_rpm , motor2);
-				PID(3000, motor3_stat.speed_rpm , motor3);
-				PID(3000, motor4_stat.speed_rpm , motor4);
-				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
-//				gpio_set(loading);
+	    	if(!btn_read(BTN1)){
+	    		gpio_toggle(shoot);
+	    		HAL_Delay(1);
 			}
-			if(!btn_read(BTN2)){
-				PID(-3000, motor2_stat.speed_rpm , motor2);
-				PID(-3000, motor3_stat.speed_rpm , motor3);
-				PID(-3000, motor4_stat.speed_rpm , motor4);
-				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
-
-			}
-//			if(btn_read(BTN2)&&btn_read(BTN1)){
-//				PID(0, motor2_stat.speed_rpm , motor2);
-//				PID(0, motor3_stat.speed_rpm , motor3);
-//				PID(0, motor4_stat.speed_rpm , motor4);
-//				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
-//			}
-
 
 	        // led blinky - useful for indicating the condition of the board
 	        if (HAL_GetTick() - last_ticks >= 100) {
