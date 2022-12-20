@@ -147,7 +147,7 @@ int main(void) {
 	int16_t* motor2 = &motor2_out;
 	int16_t* motor3 = &motor3_out;
 	int16_t* motor4 = &motor4_out;
-	char rx_buff[4]={0};
+	uint8_t rx_buff[3]={0};
 	uint8_t start = 0;
 	uint16_t timeout = 4;
 //	uint8_t ok =
@@ -160,52 +160,107 @@ int main(void) {
 //			uint8_t rx_buff[3]={0};
 //			uint8_t start = 0;
 
-			uint8_t ok = HAL_UART_Receive(&huart1, rx_buff, 4, timeout);
+			uint8_t ok = HAL_UART_Receive(&huart1, &start, 1, timeout);
+//			HAL_UART_Receive(&huart1, rx_buff, 1, timeout);
 
-//			if(rx_buff[0] == 'A'){
-//				PID(0, motor2_stat.speed_rpm , motor2);
-//				PID(2000, motor3_stat.speed_rpm , motor3);
-//				PID(-2000, motor4_stat.speed_rpm , motor4);
-//				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
-//			}
+			if(ok == HAL_OK && start == 'O'){
+				HAL_UART_Receive(&huart1, &rx_buff[0], 1, timeout);
+			}
+			else{
+				tft_prints(0,10,"stop");
+			}
 
-
-	    	if (tft_update(10) == 0) {
+	    	if (tft_update(10) == 0){
 				tft_prints(0,0,"m2_spd: %d", motor2_stat.speed_rpm);
 
 				tft_prints(0,1,"m3_spd: %d", motor3_stat.speed_rpm);
 
 				tft_prints(0,2,"m4_spd: %d", motor4_stat.speed_rpm);
 
-				tft_prints(0,4,"A: %c", rx_buff[0]);
-				tft_prints(0,5,"B: %d", rx_buff[0]);
-				tft_prints(0,6,"A: %d", rx_buff[2]);
-				tft_prints(0,8,"time: %d",HAL_GetTick());
-
+				tft_prints(0,4,"A: %c", start);
+				tft_prints(0,5,"A: %d", start);
+				tft_prints(0,6,"B: %c", rx_buff[0]);
+				tft_prints(0,7,"B: %d", rx_buff[0]);
 			}
 
-			if(rx_buff[0] == 'A'){
-				PID(rx_buff[1]*1000, motor2_stat.speed_rpm , motor2);
-				PID(rx_buff[2]*1000, motor3_stat.speed_rpm , motor3);
-				PID(rx_buff[3], motor4_stat.speed_rpm , motor4);
-				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
-			}
-			else if(rx_buff[0] == 'B'){
-				PID(0, motor2_stat.speed_rpm , motor2);
+	    	if(start == 'O'){
+
+				switch(rx_buff[0]){
+
+				case 'W':
+					PID(0, motor2_stat.speed_rpm , motor2);
+					PID(2000, motor3_stat.speed_rpm , motor3);
+					PID(-2000, motor4_stat.speed_rpm , motor4);
+					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+					break;
+
+				case 'S':
+					PID(0, motor2_stat.speed_rpm , motor2); //head
+					PID(-2000, motor3_stat.speed_rpm , motor3);
+					PID(2000, motor4_stat.speed_rpm , motor4);
+					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+					break;
+
+				case 'D':
+					PID(2000, motor2_stat.speed_rpm , motor2);
+					PID(0, motor3_stat.speed_rpm , motor3);
+					PID(0, motor4_stat.speed_rpm , motor4);
+					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+					break;
+	//
+	//	    	case 'A':
+	//	    		PID(3000, motor2_stat.speed_rpm , motor2);
+	//				PID(3000, motor3_stat.speed_rpm , motor3);
+	//				PID(3000, motor4_stat.speed_rpm , motor4);
+	//				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+
+				case 'R':
+					PID(2000, motor2_stat.speed_rpm , motor2);
+					PID(2000, motor3_stat.speed_rpm , motor3);
+					PID(2000, motor4_stat.speed_rpm , motor4);
+					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+					break;
+
+				case 'P': //shoot
+					gpio_toggle(shoot); //原loading
+					tft_prints(0,8,"shoot");
+					break;
+
+				case 'L': //preshoot
+					gpio_toggle(preshoot); //原lagori
+					gpio_set(preshoot);
+					gpio_reset(preshoot);
+					tft_prints(0,9,"preshoot");
+					break;
+
+				case 'E': //lagori
+					gpio_toggle(lagori); //原shoot
+					gpio_set(lagori);
+					gpio_reset(lagori);
+					tft_prints(1,8,"lagori");
+					break;
+
+				case 'X':  //loading
+					gpio_toggle(loading);
+					tft_prints(1,9,"loading");
+					break;
+
+				case 'T':
+					PID(0, motor2_stat.speed_rpm , motor2);
+					PID(0, motor3_stat.speed_rpm , motor3);
+					PID(0, motor4_stat.speed_rpm , motor4);
+					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+					tft_prints(0,9,"stop");
+					break;
+				}
+	    	}
+	    	else{
+	    		PID(0, motor2_stat.speed_rpm , motor2);
 				PID(0, motor3_stat.speed_rpm , motor3);
 				PID(0, motor4_stat.speed_rpm , motor4);
-				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);s
-			}
-
-
-//			if (ok == HAL_OK && start == 'A'){
-//				HAL_UART_Receive(&huart1, rx_buff, 2, timeout);
-//				tft_prints(0,8,"A");
-//	}
-//			else{
-//				tft_prints(0,6,"not ok");
-//				continue;
-//			}
+				CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+				tft_prints(0,9,"stop");
+	    	}
 
 	    	/* USER CODE END WHILE */
 	    	HAL_CAN_RxFifo0MsgPendingCallback(&hcan1); //motor 2,3,4 can work
