@@ -179,59 +179,83 @@ int main(void) {
 
 				case 'W':
 					PID(0, motor2_stat.speed_rpm , motor2);
-					PID(1000, motor3_stat.speed_rpm , motor3);
-					PID(-1000, motor4_stat.speed_rpm , motor4);
+					PID(500, motor3_stat.speed_rpm , motor3);
+					PID(-500, motor4_stat.speed_rpm , motor4);
 					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
 					break;
 
 				case 'S':
 					PID(0, motor2_stat.speed_rpm , motor2); //head
-					PID(-1000, motor3_stat.speed_rpm , motor3);
-					PID(1000, motor4_stat.speed_rpm , motor4);
+					PID(-500, motor3_stat.speed_rpm , motor3);
+					PID(500, motor4_stat.speed_rpm , motor4);
 					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
 					break;
 
 				case 'D':
-					PID(-1000, motor2_stat.speed_rpm , motor2);
+					PID(500, motor2_stat.speed_rpm , motor2);
+					PID(-250, motor3_stat.speed_rpm , motor3);
+					PID(-250, motor4_stat.speed_rpm , motor4);
+					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+					break;
+
+		    	case 'A':
+		    		PID(-500, motor2_stat.speed_rpm , motor2);
+					PID(250, motor3_stat.speed_rpm , motor3);
+					PID(250, motor4_stat.speed_rpm , motor4);
+					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+					break;
+
+				case 'R':
+					PID(500, motor2_stat.speed_rpm , motor2);
+					PID(500, motor3_stat.speed_rpm , motor3);
+					PID(500, motor4_stat.speed_rpm , motor4);
+					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
+					break;
+
+				case 'r':
+					PID(-500, motor2_stat.speed_rpm , motor2);
 					PID(-500, motor3_stat.speed_rpm , motor3);
 					PID(-500, motor4_stat.speed_rpm , motor4);
 					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
 					break;
 
-		    	case 'A':
-		    		PID(1000, motor2_stat.speed_rpm , motor2);
-					PID(500, motor3_stat.speed_rpm , motor3);
-					PID(500, motor4_stat.speed_rpm , motor4);
-					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
-
-				case 'R':
-					PID(1000, motor2_stat.speed_rpm , motor2);
-					PID(1000, motor3_stat.speed_rpm , motor3);
-					PID(1000, motor4_stat.speed_rpm , motor4);
-					CAN_cmd_motor(0, motor2_out, motor3_out, motor4_out,&hcan1);
-					break;
-
-				case 'P': //shoot
-					gpio_toggle(shoot); //原loading
-					HAL_Delay(2);
+				case 'V': //shoot_on
+					gpio_set(shoot);
 					tft_prints(0,8,"shoot");
 					break;
 
-				case 'L': //preshoot
-					gpio_toggle(preshoot); //原lagori
-					HAL_Delay(2);
+				case 'v': //shoot_off
+					gpio_reset(shoot);
+					tft_prints(0,8,"shoot");
+					break;
+
+				case 'B': //preshoot_on
+					gpio_set(preshoot);
 					tft_prints(0,9,"preshoot");
 					break;
 
-				case 'E': //lagori
-					gpio_toggle(lagori); //原shoot
-					HAL_Delay(2);
+				case 'b': //preshoot_off
+					gpio_reset(preshoot);
+					tft_prints(0,9,"preshoot");
+					break;
+
+				case 'N': //lagori_on
+					gpio_set(lagori);
 					tft_prints(1,8,"lagori");
 					break;
 
-				case 'X':  //loading
-					gpio_toggle(loading);
-					HAL_Delay(2);
+				case 'n': //lagori_off
+					gpio_reset(lagori);
+					tft_prints(1,8,"lagori");
+					break;
+
+				case 'M':  //loading_on
+					gpio_set(loading);
+					tft_prints(1,9,"loading");
+					break;
+
+				case 'm':  //loading_off
+					gpio_reset(loading);
 					tft_prints(1,9,"loading");
 					break;
 
