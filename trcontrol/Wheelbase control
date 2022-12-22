@@ -281,10 +281,22 @@ int main(void) {
 					motortarget[2] = 2000;
 					break;
 
+				case'w':
+					motortarget[0] = 0;
+					motortarget[1] = -1000;
+					motortarget[2] = 1000;
+					break;
+
 				case 'S':
 					motortarget[0] = 0;
 					motortarget[1] = 2000;
 					motortarget[2] = -2000;
+					break;
+
+				case 's':
+					motortarget[0] = 0;
+					motortarget[1] = 1000;
+					motortarget[2] = -1000;
 					break;
 
 				case 'D':
@@ -293,22 +305,34 @@ int main(void) {
 					motortarget[2] = -1000;
 					break;
 
+				case 'd':
+					motortarget[0] = 1000;
+					motortarget[1] = -500;
+					motortarget[2] = -500;
+					break;
+
 		    	case 'A':
 					motortarget[0] = -2000;
 					motortarget[1] = 1000;
 					motortarget[2] = 1000;
 					break;
 
+		    	case 'a':
+					motortarget[0] = -1000;
+					motortarget[1] = 500;
+					motortarget[2] = 500;
+					break;
+
 				case 'R':
-					motortarget[0] = 1000;
-					motortarget[1] = 1000;
-					motortarget[2] = 1000;
+					motortarget[0] = 1250;
+					motortarget[1] = 1250;
+					motortarget[2] = 1250;
 					break;
 
 				case 'r':
-					motortarget[0] = -1000;
-					motortarget[1] = -1000;
-					motortarget[2] = -1000;
+					motortarget[0] = -1250;
+					motortarget[1] = -1250;
+					motortarget[2] = -1250;
 					break;
 
 				case 'T':
