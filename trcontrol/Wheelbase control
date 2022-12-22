@@ -324,15 +324,15 @@ int main(void) {
 					break;
 
 				case 'R':
-					motortarget[0] = 1250;
-					motortarget[1] = 1250;
-					motortarget[2] = 1250;
+					motortarget[0] = 1000;
+					motortarget[1] = 1000;
+					motortarget[2] = 1000;
 					break;
 
 				case 'r':
-					motortarget[0] = -1250;
-					motortarget[1] = -1250;
-					motortarget[2] = -1250;
+					motortarget[0] = -1000;
+					motortarget[1] = -1000;
+					motortarget[2] = -1000;
 					break;
 
 				case 'T':
