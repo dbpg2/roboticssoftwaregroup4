@@ -1,0 +1,223 @@
+#include "main.h"
+#include "tim.h"
+#include "math.h"
+#include "lcd/lcd.h"
+#include <stdlib.h>
+
+void straight(){
+	gpio_reset(IN1);
+	gpio_set(IN2);
+	gpio_set(IN3);
+	gpio_reset(IN4);
+}
+void pwm_init(void) {
+	// init the pwm prescaler value and auto-reload value and start the pwm
+	HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
+	TIM5->ARR = 16799;    //set the timer1 auto-reload counter
+	TIM5->PSC = 99;    //set the timer1 prescaler value
+	TIM4->ARR = 99;  // product 8400
+	TIM4->PSC = 83;
+
+}
+
+void pwm_forward(/*int16_t* angle,*/ float* diff){
+	static uint16_t c3=74, c4=74;
+	static bool tick=1;
+	volatile static uint32_t last_tick = 0, last_ticks = 0,last_ticks2=0,last_ticks3 = 0;
+	static uint16_t ct;
+	static uint8_t right = 1, left = 1,right2=1;
+
+	static int16_t targetx = 27;
+	static float pk=12, pd=1;
+
+
+	static float olderror=0;
+	float abs_error = /*targetx - newx*/-(diff[0]+diff[1]);
+	static float i_error=0;
+	uint16_t d_error = (olderror - abs_error);
+	tft_prints(9,9,"%d",d_error);
+//	i_error += (abs_error)*(HAL_GetTick()-last_ticks) ;
+	int pwm = (pk*abs_error+pd*d_error+1180);
+	static old_pwm = 0;
+	olderror = abs_error;
+	bool state = 0; // 1 is drift
+	volatile static uint32_t last_tick10 = 0, timer2 = 0;
+//	last_ticks = HAL_GetTick();
+//	pwm = (pwm);
+	tft_prints(0,9,"%d",pwm);
+
+//	if (HAL_GetTick() - timer2 > 500 && c3<78 && c4 < 78){
+//		c3 ++; //-1/80*abs(pwm - 1400) + 78;
+//		c4 ++; //-1/80*abs(pwm - 1400) + 78;
+//
+//		timer2 = HAL_GetTick();
+//	}
+	c3= 78;
+	c4=78;
+	straight();
+//	if (abs(abs_error)<10){
+//		pwm = 1200;
+//	}
+	if ((diff[2]==1 && !(old_pwm<1200)) ){
+		last_ticks = HAL_GetTick();
+		if (pwm>1580){
+			pwm = 1580;
+		}
+
+		state = 1;
+		last_tick10 = HAL_GetTick();
+	}else if (diff[4] && HAL_GetTick()-last_ticks<200&&pwm>850){
+		pwm = 600;
+		gpio_set(IN1);
+		gpio_reset(IN2);
+		gpio_set(IN3);
+		gpio_reset(IN4);
+
+
+		c3 = 110;  // left
+		c4 = 110;  // right
+
+	}else if (diff[3]){
+		last_ticks = HAL_GetTick();
+
+		pwm =520;
+		c3 = 72;
+		c4 = 72;
+		straight();
+	}
+	else{
+		last_ticks = HAL_GetTick();
+
+		if((pwm > 1580|| diff[2]==2||diff[2]==1)&& !(old_pwm<1000)/*&&!diff[3]*/){
+			pwm = 1580;
+			straight();
+			c3 = 72;
+			c4 = 72;
+		}
+		else if (pwm < 600){
+			pwm = 600;
+			straight();
+			c3 = 72;
+			c4 = 72;
+		}
+		if (pwm >1300 || pwm <1100){
+			c3 = 72;
+			c4 = 72;
+			straight();
+
+		}
+
+	}
+//	else if (pwm)
+//	if (abs(old_pwm-pwm)< 100){
+//		c3 = 78;
+//		c4 = 78;
+//	}else{
+//		c3 = 72;
+//		c4 = 72;
+//	}
+	old_pwm = pwm;
+	if(diff[5]){
+		pwm=1500;
+	}
+
+	if ((state || HAL_GetTick() - last_tick10 < 150)){
+
+		gpio_reset(IN1);
+		gpio_set(IN2);
+		gpio_reset(IN3);
+		gpio_set(IN4);
+
+//		straight();
+		pwm = 1600;
+		c3 = 100;  // left
+		c4 = 110;  // right
+
+	}
+//	if (HAL_GetTick() - last_tick10 >= 1000 && c3==120){
+//		c3=74;
+//		c4=74;
+//	}
+
+//	if (pwm < 400){
+//		if (pwm < 200){
+//			gpio_set(IN1);
+//			gpio_reset(IN2);
+//			gpio_set(IN3);
+//			gpio_reset(IN4);
+//			c3 = 86;  // left
+//			c4 = 90;  // right
+//		}
+//		else{
+//			straight();
+//			c3 = 70;  // left
+//			c4 = 85;  // right
+//		}
+//		pwm = 400;
+//
+//
+//	}else if (pwm > 1170 ){
+//		pwm = 1170;
+//		straight();
+//		c3 = 72;
+//		c4 = 72;
+//	}else{
+//
+//	straight();
+//	c3 = 74;
+//	c4 = 74;
+//	}
+
+//	if (HAL_GetTick()-last_ticks2>500){
+//		last_ticks2=HAL_GetTick();
+//		last_ticks=HAL_GetTick();
+//	}
+	TIM5->CCR1 = pwm;//pwm;    1400 straight // 1580 right
+	TIM4->CCR3 = c3;//c3;
+	TIM4->CCR4 = c4;//c4;
+//	if (angle[4] != 0 && pwm < 700){
+//		if (HAL_GetTick()-last_ticks<300){
+//		gpio_set(IN1);
+//		gpio_reset(IN2);
+//		gpio_set(IN3);
+//		gpio_reset(IN4);
+//
+//		c3 = 100;
+//		c4 = 100;
+//		}
+//		else{
+//			straight();
+//			c3 = 74;
+//			c4 = 74;
+//		}
+//	}else{
+//		last_ticks = HAL_GetTick();
+//		straight();
+//		c3 = 74;
+//		c4 = 74;
+//	}
+//	tft_prints(0,9,"%d",pwm);
+//	oldx = newx;
+//	last_tick=HAL_GetTick();
+//
+//	TIM5->CCR1 = ct;
+//	TIM4->CCR3 = c3;
+//	TIM4->CCR4 = c4;
+////	straight();
+//	if ( pwm > 1180){
+//		c3 = 70;
+//		c4 = 70;
+//	}
+//	if (/*angle[4]!= 4 && */angle[4]!= 1){
+//		ct = pwm;
+//		c3=74;
+//		c4=74;
+//	}
+
+
+
+
+
+}
