@@ -215,7 +215,7 @@ void SobelFilter(uint16_t* in, uint16_t* out, float* diff){
 		}
         slope2/=line2;
 
-		if (/*lasty>-20&&*/xoff&&!slope2>0){
+		if (xoff&&!slope2>0){
 			diff[3] = 1;
 		}
 		if (avgiy<60 && avgix>115){
@@ -241,7 +241,7 @@ void SobelFilter(uint16_t* in, uint16_t* out, float* diff){
     	}
 
 
-    	if (/*HD <= 2 || */slope >0){
+    	if (slope >0){
     		HD = THD;
     		if (slope2<0){
     			diff[5] = 1;
@@ -329,7 +329,6 @@ int main(void) {
 	float diff[5]={0}; // [0]: angle: front horizontal distance , [1] middle horizontal distance
 
 
-//	cam_set_framesize(QQQVGA_60x80);
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
