@@ -84,7 +84,6 @@ void SobelFilter(uint16_t* in, uint16_t* out, float* diff){
 	uint8_t  count = 0,countwhite = 0, countHD = 0, countVD = 0,countline = 0,countline2 = 0;  // HD: horizontal distance
 
 	float THD = abs(TARGET_SLOPE*X - Y - TARGET_SLOPE*20 - (-2)) / sqrt(TARGET_SLOPE*TARGET_SLOPE+1);  // target horizontal distance
-	//object(x,y)= (80,2)
 	static float  theta;
 	float lastx=0,lasty=1,lastx2=115,lasty2=1,slope=0,slope2=0,line=0,avgx=0,countx=0,L=0, line2=0;
 	uint16_t avgix =0 ;
